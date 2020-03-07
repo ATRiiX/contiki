@@ -92,28 +92,28 @@
 #include <stdio.h>
 #include <stdint.h>
 /*---------------------------------------------------------------------------*/
-#define CC26XX_DEMO_LOOP_INTERVAL       (CLOCK_SECOND * 20)
-#define CC26XX_DEMO_LEDS_PERIODIC       LEDS_YELLOW
-#define CC26XX_DEMO_LEDS_BUTTON         LEDS_RED
-#define CC26XX_DEMO_LEDS_REBOOT         LEDS_ALL
+#define CC26XX_DEMO_LOOP_INTERVAL (CLOCK_SECOND * 20)
+#define CC26XX_DEMO_LEDS_PERIODIC LEDS_YELLOW
+#define CC26XX_DEMO_LEDS_BUTTON LEDS_RED
+#define CC26XX_DEMO_LEDS_REBOOT LEDS_ALL
 /*---------------------------------------------------------------------------*/
-#define CC26XX_DEMO_SENSOR_NONE         (void *)0xFFFFFFFF
+#define CC26XX_DEMO_SENSOR_NONE (void *)0xFFFFFFFF
 
-#define CC26XX_DEMO_SENSOR_1     &button_left_sensor
-#define CC26XX_DEMO_SENSOR_2     &button_right_sensor
+#define CC26XX_DEMO_SENSOR_1 &button_left_sensor
+#define CC26XX_DEMO_SENSOR_2 &button_right_sensor
 
 #if BOARD_SENSORTAG
-#define CC26XX_DEMO_SENSOR_3     CC26XX_DEMO_SENSOR_NONE
-#define CC26XX_DEMO_SENSOR_4     CC26XX_DEMO_SENSOR_NONE
-#define CC26XX_DEMO_SENSOR_5     &reed_relay_sensor
+#define CC26XX_DEMO_SENSOR_3 CC26XX_DEMO_SENSOR_NONE
+#define CC26XX_DEMO_SENSOR_4 CC26XX_DEMO_SENSOR_NONE
+#define CC26XX_DEMO_SENSOR_5 &reed_relay_sensor
 #elif BOARD_LAUNCHPAD
-#define CC26XX_DEMO_SENSOR_3     CC26XX_DEMO_SENSOR_NONE
-#define CC26XX_DEMO_SENSOR_4     CC26XX_DEMO_SENSOR_NONE
-#define CC26XX_DEMO_SENSOR_5     CC26XX_DEMO_SENSOR_NONE
+#define CC26XX_DEMO_SENSOR_3 CC26XX_DEMO_SENSOR_NONE
+#define CC26XX_DEMO_SENSOR_4 CC26XX_DEMO_SENSOR_NONE
+#define CC26XX_DEMO_SENSOR_5 CC26XX_DEMO_SENSOR_NONE
 #else
-#define CC26XX_DEMO_SENSOR_3     &button_up_sensor
-#define CC26XX_DEMO_SENSOR_4     &button_down_sensor
-#define CC26XX_DEMO_SENSOR_5     &button_select_sensor
+#define CC26XX_DEMO_SENSOR_3 &button_up_sensor
+#define CC26XX_DEMO_SENSOR_4 &button_down_sensor
+#define CC26XX_DEMO_SENSOR_5 &button_select_sensor
 #endif
 /*---------------------------------------------------------------------------*/
 static struct etimer et;
@@ -141,7 +141,8 @@ static void init_mpu_reading(void *not_used);
 static void
 print_mpu_reading(int reading)
 {
-  if(reading < 0) {
+  if (reading < 0)
+  {
     printf("-");
     reading = -reading;
   }
@@ -154,19 +155,25 @@ get_bmp_reading()
 {
   int value;
   clock_time_t next = SENSOR_READING_PERIOD +
-    (random_rand() % SENSOR_READING_RANDOM);
+                      (random_rand() % SENSOR_READING_RANDOM);
 
   value = bmp_280_sensor.value(BMP_280_SENSOR_TYPE_PRESS);
-  if(value != CC26XX_SENSOR_READING_ERROR) {
+  if (value != CC26XX_SENSOR_READING_ERROR)
+  {
     printf("BAR: Pressure=%d.%02d hPa\n", value / 100, value % 100);
-  } else {
+  }
+  else
+  {
     printf("BAR: Pressure Read Error\n");
   }
 
   value = bmp_280_sensor.value(BMP_280_SENSOR_TYPE_TEMP);
-  if(value != CC26XX_SENSOR_READING_ERROR) {
+  if (value != CC26XX_SENSOR_READING_ERROR)
+  {
     printf("BAR: Temp=%d.%02d C\n", value / 100, value % 100);
-  } else {
+  }
+  else
+  {
     printf("BAR: Temperature Read Error\n");
   }
 
@@ -180,11 +187,12 @@ get_tmp_reading()
 {
   int value;
   clock_time_t next = SENSOR_READING_PERIOD +
-    (random_rand() % SENSOR_READING_RANDOM);
+                      (random_rand() % SENSOR_READING_RANDOM);
 
   value = tmp_007_sensor.value(TMP_007_SENSOR_TYPE_ALL);
 
-  if(value == CC26XX_SENSOR_READING_ERROR) {
+  if (value == CC26XX_SENSOR_READING_ERROR)
+  {
     printf("TMP: Ambient Read Error\n");
     return;
   }
@@ -205,19 +213,25 @@ get_hdc_reading()
 {
   int value;
   clock_time_t next = SENSOR_READING_PERIOD +
-    (random_rand() % SENSOR_READING_RANDOM);
+                      (random_rand() % SENSOR_READING_RANDOM);
 
   value = hdc_1000_sensor.value(HDC_1000_SENSOR_TYPE_TEMP);
-  if(value != CC26XX_SENSOR_READING_ERROR) {
+  if (value != CC26XX_SENSOR_READING_ERROR)
+  {
     printf("HDC: Temp=%d.%02d C\n", value / 100, value % 100);
-  } else {
+  }
+  else
+  {
     printf("HDC: Temp Read Error\n");
   }
 
   value = hdc_1000_sensor.value(HDC_1000_SENSOR_TYPE_HUMIDITY);
-  if(value != CC26XX_SENSOR_READING_ERROR) {
+  if (value != CC26XX_SENSOR_READING_ERROR)
+  {
     printf("HDC: Humidity=%d.%02d %%RH\n", value / 100, value % 100);
-  } else {
+  }
+  else
+  {
     printf("HDC: Humidity Read Error\n");
   }
 
@@ -229,12 +243,15 @@ get_light_reading()
 {
   int value;
   clock_time_t next = SENSOR_READING_PERIOD +
-    (random_rand() % SENSOR_READING_RANDOM);
+                      (random_rand() % SENSOR_READING_RANDOM);
 
   value = opt_3001_sensor.value(0);
-  if(value != CC26XX_SENSOR_READING_ERROR) {
+  if (value != CC26XX_SENSOR_READING_ERROR)
+  {
     printf("OPT: Light=%d.%02d lux\n", value / 100, value % 100);
-  } else {
+  }
+  else
+  {
     printf("OPT: Light Read Error\n");
   }
 
@@ -247,7 +264,7 @@ get_mpu_reading()
 {
   int value;
   clock_time_t next = SENSOR_READING_PERIOD +
-    (random_rand() % SENSOR_READING_RANDOM);
+                      (random_rand() % SENSOR_READING_RANDOM);
 
   printf("MPU Gyro: X=");
   value = mpu_9250_sensor.value(MPU_9250_SENSOR_TYPE_GYRO_X);
@@ -380,53 +397,81 @@ PROCESS_THREAD(cc26xx_demo_process, ev, data)
   get_sync_sensor_readings();
   init_sensor_readings();
 
-  while(1) {
+  while (1)
+  {
 
     PROCESS_YIELD();
 
-    if(ev == PROCESS_EVENT_TIMER) {
-      if(data == &et) {
+    if (ev == PROCESS_EVENT_TIMER)
+    {
+      if (data == &et)
+      {
         leds_toggle(CC26XX_DEMO_LEDS_PERIODIC);
 
         get_sync_sensor_readings();
 
         etimer_set(&et, CC26XX_DEMO_LOOP_INTERVAL);
       }
-    } else if(ev == sensors_event) {
-      if(data == CC26XX_DEMO_SENSOR_1) {
+    }
+    else if (ev == sensors_event)
+    {
+      if (data == CC26XX_DEMO_SENSOR_1)
+      {
         printf("Left: Pin %d, press duration %d clock ticks\n",
                (CC26XX_DEMO_SENSOR_1)->value(BUTTON_SENSOR_VALUE_STATE),
                (CC26XX_DEMO_SENSOR_1)->value(BUTTON_SENSOR_VALUE_DURATION));
 
-        if((CC26XX_DEMO_SENSOR_1)->value(BUTTON_SENSOR_VALUE_DURATION) >
-           CLOCK_SECOND) {
+        if ((CC26XX_DEMO_SENSOR_1)->value(BUTTON_SENSOR_VALUE_DURATION) >
+            CLOCK_SECOND)
+        {
           printf("Long button press!\n");
         }
 
         leds_toggle(CC26XX_DEMO_LEDS_BUTTON);
-      } else if(data == CC26XX_DEMO_SENSOR_2) {
+      }
+      else if (data == CC26XX_DEMO_SENSOR_2)
+      {
         leds_on(CC26XX_DEMO_LEDS_REBOOT);
         watchdog_reboot();
-      } else if(data == CC26XX_DEMO_SENSOR_3) {
+      }
+      else if (data == CC26XX_DEMO_SENSOR_3)
+      {
         printf("Up\n");
-      } else if(data == CC26XX_DEMO_SENSOR_4) {
+      }
+      else if (data == CC26XX_DEMO_SENSOR_4)
+      {
         printf("Down\n");
-      } else if(data == CC26XX_DEMO_SENSOR_5) {
+      }
+      else if (data == CC26XX_DEMO_SENSOR_5)
+      {
 #if BOARD_SENSORTAG
-        if(buzzer_state()) {
+        if (buzzer_state())
+        {
           buzzer_stop();
-        } else {
+        }
+        else
+        {
           buzzer_start(1000);
         }
-      } else if(ev == sensors_event && data == &bmp_280_sensor) {
+      }
+      else if (ev == sensors_event && data == &bmp_280_sensor)
+      {
         get_bmp_reading();
-      } else if(ev == sensors_event && data == &opt_3001_sensor) {
+      }
+      else if (ev == sensors_event && data == &opt_3001_sensor)
+      {
         get_light_reading();
-      } else if(ev == sensors_event && data == &hdc_1000_sensor) {
+      }
+      else if (ev == sensors_event && data == &hdc_1000_sensor)
+      {
         get_hdc_reading();
-      } else if(ev == sensors_event && data == &tmp_007_sensor) {
+      }
+      else if (ev == sensors_event && data == &tmp_007_sensor)
+      {
         get_tmp_reading();
-      } else if(ev == sensors_event && data == &mpu_9250_sensor) {
+      }
+      else if (ev == sensors_event && data == &mpu_9250_sensor)
+      {
         get_mpu_reading();
 #elif BOARD_SMARTRF06EB
         printf("Sel: Pin %d, press duration %d clock ticks\n",

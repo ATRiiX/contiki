@@ -29,50 +29,76 @@
  */
 
 /**
+ * \file
+ *    A simple IPv6-over-BLE UDP-client.
+ *
  * \author
  *    Michael Spoerk <michael.spoerk@tugraz.at>
  */
 /*---------------------------------------------------------------------------*/
-#ifndef PROJECT_CONF_H_
-#define PROJECT_CONF_H_
+#include "contiki.h"
+#include "contiki-net.h"
+#include "contiki-lib.h"
+#include "dev/leds.h"
 
-#define MODE_IEEE802_15_4 1 /* enable RPL and disable TSCH in Makefile */
-#define MODE_BLE 2
+#define DEBUG DEBUG_FULL
+#include "net/ip/uip-debug.h"
 
-#define MODE MODE_BLE
+#include <string.h>
 /*---------------------------------------------------------------------------*/
-/* Disable button shutdown functionality */
-#define BUTTON_SENSOR_CONF_ENABLE_SHUTDOWN 0
+#define CLIENT_PORT 61617
+#define SERVER_PORT 61616
+
+#define UDP_LEN_MAX 255
 /*---------------------------------------------------------------------------*/
-/* Change to match your configuration */
-#define BOARD_CONF_DEBUGGER_DEVPACK 1
+#define UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
+static struct uip_udp_conn *server_conn;
+
+static char buf[UDP_LEN_MAX];
+static uint16_t packet_counter;
 /*---------------------------------------------------------------------------*/
-#define PACKETBUF_CONF_SIZE 1280
-#define QUEUEBUF_CONF_NUM 1
-#define UIP_CONF_BUFFER_SIZE 1280
-
-#define CC26XX_CONF_RADIO_MODE CC26XX_RADIO_MODE_BLE
-#define NETSTACK_CONF_RADIO ble_cc2650_driver
-#define NETSTACK_CONF_RDC ble_null_par_driver
-#define NETSTACK_CONF_MAC ble_l2cap_driver
-
-#define RTIMER_CONF_MULTIPLE_ACCESS 1
-
-/* BLE radio settings */
-#define BLE_MODE_CONF_INIT_PEER_ADDR 0x98072D3C7004
-
-/* 6LoWPAN settings */
-#define SICSLOWPAN_CONF_MAC_MAX_PAYLOAD 1280
-#define SICSLOWPAN_CONF_COMPRESSION SICSLOWPAN_COMPRESSION_HC06
-#define SICSLOWPAN_CONF_COMPRESSION_THRESHOLD 0 /* always use compression */
-#define SICSLOWPAN_CONF_FRAG 0
-#define SICSLOWPAN_FRAMER_HDRLEN 0
-
-/* network layer settings */
-#define UIP_CONF_ROUTER 1
-#define UIP_CONF_ND6_SEND_NA 1
-#define UIP_CONF_ND6_SEND_RA 1
-#define UIP_CONF_IP_FORWARD 0
+PROCESS(ipv6_ble_server_process, "IPv6 over BLE - server process");
+AUTOSTART_PROCESSES(&ipv6_ble_server_process);
 /*---------------------------------------------------------------------------*/
-#endif /* PROJECT_CONF_H_ */
+static void
+tcpip_handler(void)
+{
+  if (uip_newdata())
+  {
+    /* process received message */
+    leds_on(LEDS_RED);
+    strncpy(buf, uip_appdata, uip_datalen());
+    buf[uip_datalen()] = '\0';
+    PRINTF("rec. message: <%s>\n", buf);
+
+    /* send response message */
+    uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+    sprintf(buf, "Hello client %04u!", packet_counter);
+    PRINTF("send message: <%s>\n", buf);
+    uip_udp_packet_send(server_conn, buf, strlen(buf));
+    packet_counter++;
+    //leds_blink(LEDS_RED);
+    memset(&server_conn->ripaddr, 0, sizeof(server_conn->ripaddr));
+    leds_off(LEDS_RED);
+  }
+}
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(ipv6_ble_server_process, ev, data)
+{
+  PROCESS_BEGIN();
+  PRINTF("CC26XX-IPv6-over-BLE server started\n");
+
+  server_conn = udp_new(NULL, UIP_HTONS(CLIENT_PORT), NULL);
+  udp_bind(server_conn, UIP_HTONS(SERVER_PORT));
+
+  while (1)
+  {
+    PROCESS_WAIT_EVENT();
+    if (ev == tcpip_event)
+    {
+      tcpip_handler();
+    }
+  }
+  PROCESS_END();
+}
 /*---------------------------------------------------------------------------*/

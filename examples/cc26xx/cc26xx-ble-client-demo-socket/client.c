@@ -39,6 +39,7 @@
 #include "contiki.h"
 #include "contiki-lib.h"
 #include "contiki-net.h"
+#include "dev/leds.h"
 
 #define DEBUG DEBUG_FULL
 #include "net/ip/uip-debug.h"
@@ -55,6 +56,7 @@
 #define CLIENT_SEND_INTERVAL (CLOCK_SECOND * 1)
 
 #define UDP_LEN_MAX 255
+
 /*---------------------------------------------------------------------------*/
 static uip_ipaddr_t server_addr;
 static struct uip_icmp6_echo_reply_notification icmp_notification;
@@ -81,19 +83,25 @@ tcpip_handler(void)
   char data[UDP_LEN_MAX];
   if (uip_newdata())
   {
+    leds_on(LEDS_GREEN);
     strncpy(data, uip_appdata, uip_datalen());
     data[uip_datalen()] = '\0';
     PRINTF("rec. message: <%s>\n", data);
+    leds_off(LEDS_GREEN);
+    //leds_blink(LEDS_GREEN);
   }
 }
 /*---------------------------------------------------------------------------*/
 static void
 timeout_handler(void)
 {
+  leds_on(LEDS_RED);
   sprintf(buf, "Hello server %04u!", packet_counter);
   PRINTF("send message: <%s>\n", buf);
   uip_udp_packet_send(conn, buf, strlen(buf));
   packet_counter++;
+  leds_off(LEDS_RED);
+  //leds_blink(LEDS_RED);
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(ipv6_ble_client_process, ev, data)
@@ -107,13 +115,16 @@ PROCESS_THREAD(ipv6_ble_client_process, ev, data)
   PRINTF("pinging the IPv6-over-BLE server: ");
   PRINT6ADDR(&server_addr);
   PRINTF("\n");
+
+  leds_on(LEDS_RED);
   do
   {
     etimer_set(&timer, PING_TIMEOUT);
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
     uip_icmp6_send(&server_addr, ICMP6_ECHO_REQUEST, 0, 20);
+    //leds_blink(LEDS_RED);
   } while (!echo_received);
-
+  leds_off(LEDS_RED);
   conn = udp_new(&server_addr, UIP_HTONS(SERVER_PORT), NULL);
   udp_bind(conn, UIP_HTONS(CLIENT_PORT));
 
